@@ -155,17 +155,6 @@ python app.py
 
 ## Deployment — Hugging Face Spaces
 
-1. [Create a new Space](https://huggingface.co/new-space) — select **Gradio** SDK
-2. Add all env vars under **Settings → Variables and secrets**
-3. Push this repo to the Space:
-
-```bash
-git remote add hf https://YOUR_HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/YOUR_HF_USERNAME/YOUR_SPACE_NAME
-git push hf main
-```
-
----
-
 ## CI/CD — GitHub Actions
 
 Create `.github/workflows/deploy.yml` to auto-deploy on every push to `main`:
