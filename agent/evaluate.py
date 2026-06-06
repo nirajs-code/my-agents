@@ -1,7 +1,7 @@
+import json
 from pydantic import BaseModel
 from data.loader import ProfileData
 from agent.prompts import evaluator_system_prompt, evaluator_user_prompt, system_prompt
-
 
 class Evaluation(BaseModel):
     is_acceptable: bool
@@ -13,12 +13,13 @@ def evaluate(client, model: str, profile: ProfileData, reply: str, message: str,
         {"role": "system", "content": evaluator_system_prompt(profile)},
         {"role": "user", "content": evaluator_user_prompt(reply, message, history)},
     ]
-    response = client.beta.chat.completions.parse(
+    response = client.chat.completions.create(
         model=model,
         messages=messages,
-        response_format=Evaluation,
     )
-    return response.choices[0].message.parsed
+    content = response.choices[0].message.content.strip()
+    data = json.loads(content)
+    return Evaluation(**data)
 
 
 def rerun(client, model: str, profile: ProfileData, reply: str, message: str, history, feedback: str) -> str:

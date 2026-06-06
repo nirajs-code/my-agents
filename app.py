@@ -8,5 +8,8 @@ from agent.chat import Me
 load_dotenv(override=True)
 
 if __name__ == "__main__":
-    me = Me(client=create_client(), model=os.getenv("MODEL"), profile=load_profile())
-    gr.ChatInterface(me.chat).launch()
+    model = os.getenv("MODEL")
+    eval_model = os.getenv("EVAL_MODEL", model)
+    me = Me(client=create_client(model), model=model, eval_client=create_client(eval_model), eval_model=eval_model, profile=load_profile())
+    share=os.getenv("GRADIO_SHARE", "false").lower() == "true"
+    gr.ChatInterface(me.chat).launch(share=share)

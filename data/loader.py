@@ -1,5 +1,8 @@
 from dataclasses import dataclass
+import os
 from pypdf import PdfReader
+from dotenv import load_dotenv
+load_dotenv(override=True)
 
 
 @dataclass
@@ -20,4 +23,8 @@ def load_profile() -> ProfileData:
         if text:
             linkedin += text
 
-    return ProfileData(name="Niraj Singh", summary=summary, linkedin=linkedin)
+    return ProfileData(
+        name=os.getenv("PROFILE_NAME", "Niraj Singh"),
+        summary=summary, 
+        linkedin=linkedin
+    )
