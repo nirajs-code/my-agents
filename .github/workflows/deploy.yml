@@ -13,13 +13,25 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Push to HF Spaces
+      - name: Install huggingface_hub
+        run: pip install huggingface_hub
+
+      - name: Deploy to HF Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git remote add hf https://${{ github.actor }}:$HF_TOKEN@huggingface.co/spaces/nirsingh/alter-ego
-          for i in 1 2 3; do
-            git push hf main --force && break
-            echo "Attempt $i failed, retrying in 30s..."
-            sleep 30
-          done  
+          python -c "
+          from huggingface_hub import HfApi
+          import os
+          api = HfApi(token=os.environ['HF_TOKEN'])
+          api.upload_folder(
+              folder_path='.',
+              repo_id='nirsingh/alter-ego',
+              repo_type='space',
+              ignore_patterns=[
+                  '.git*', '.venv', '__pycache__',
+                  '*.pyc', '.env', 'uv.lock', '.gradio'
+              ]
+          )
+          print('Deployed successfully')
+          "  
