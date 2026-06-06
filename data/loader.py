@@ -25,6 +25,6 @@ def load_profile() -> ProfileData:
 
     return ProfileData(
         name=os.getenv("PROFILE_NAME", "Niraj Singh"),
-        summary=summary, 
-        linkedin=linkedin
+        summary=summary,
+        linkedin=linkedin,
     )

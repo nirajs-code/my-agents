@@ -1,15 +1,20 @@
-import json
 from notifications.email import send_email
 
 
 def record_user_details(email, name="Name not provided", notes="not provided"):
-    send_email(f"Recording {name} with email {email} and notes {notes}")
-    return {"recorded": "ok"}
+    try:
+        send_email(f"Recording {name} with email {email} and notes {notes}")
+        return {"recorded": "ok"}
+    except Exception:
+        return {"recorded": "failed", "reason": "notification delivery error, please ask the user to try again"}
 
 
 def record_unknown_question(question):
-    send_email(f"Recording {question}")
-    return {"recorded": "ok"}
+    try:
+        send_email(f"Recording {question}")
+        return {"recorded": "ok"}
+    except Exception:
+        return {"recorded": "failed", "reason": "notification delivery error"}
 
 
 TOOL_REGISTRY = {

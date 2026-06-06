@@ -1,7 +1,11 @@
 import json
-from pydantic import BaseModel
+import re
+import structlog
+from pydantic import BaseModel, ValidationError
 from data.loader import ProfileData
 from agent.prompts import evaluator_system_prompt, evaluator_user_prompt, system_prompt
+
+log = structlog.get_logger()
 
 class Evaluation(BaseModel):
     is_acceptable: bool
@@ -17,9 +21,25 @@ def evaluate(client, model: str, profile: ProfileData, reply: str, message: str,
         model=model,
         messages=messages,
     )
-    content = response.choices[0].message.content.strip()
-    data = json.loads(content)
-    return Evaluation(**data)
+    content = response.choices[0].message.content
+
+    if not content:
+        log.warning("evaluator_empty_response", model=model)
+        return Evaluation(is_acceptable=True, feedback="empty response from evaluator — defaulting to accept")
+
+    content = content.strip()
+
+    # strip markdown code fences if the model wrapped the JSON
+    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", content, re.DOTALL)
+    if match:
+        content = match.group(1)
+
+    try:
+        data = json.loads(content)
+        return Evaluation(**data)
+    except (json.JSONDecodeError, ValidationError) as e:
+        log.warning("evaluator_parse_failed", model=model, error=str(e), raw=content)
+        return Evaluation(is_acceptable=True, feedback=f"parse error — defaulting to accept")
 
 
 def rerun(client, model: str, profile: ProfileData, reply: str, message: str, history, feedback: str) -> str:

@@ -1,6 +1,9 @@
 import os
 import smtplib
+import structlog
 from email.mime.text import MIMEText
+
+log = structlog.get_logger()
 
 def send_email(text):
     try:
@@ -13,6 +16,7 @@ def send_email(text):
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
             server.login(gmail_user, os.getenv("GMAIL_APP_PASSWORD"))
             server.sendmail(gmail_user, gmail_to, msg.as_string())
-            print("Notification sent successfully.")
+            log.info("email_sent", to=gmail_to)
     except Exception as e:
-        print(f"Failed to send email notifications: {e}")
+        log.error("email_failed", error=str(e))
+        raise
